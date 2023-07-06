@@ -57,6 +57,8 @@ namespace imcrop
 		RectSide cropSide = RectSide.Unknown;
 		string imgFilename = "";
 
+		Stack<Rectangle> selectionHistory = new Stack<Rectangle>();
+
 
 		struct SideDistance
 		{
@@ -322,6 +324,7 @@ namespace imcrop
 					cropArea.Y = 0;
 					cropArea.Width = img.Width;
 					cropArea.Height = img.Height;
+					selectionHistory.Clear();
 					disp.Invalidate();
 				}
 				catch { }
@@ -463,6 +466,7 @@ namespace imcrop
 				{
 					cropping = true;
 					cropSide = d.side;
+					selectionHistory.Push(cropArea);
 				}
 				else
 				{
@@ -480,7 +484,13 @@ namespace imcrop
 				rectStart.Y = e.Y;
 				rectContinue.X = e.X;
 				rectContinue.Y = e.Y;
+				selectionHistory.Push(cropArea);
 				disp.Invalidate();
+			}
+			//else if (e.Button == MouseButtons.)
+			else
+			{
+				//MessageBox.Show($"MouseDown {((int)e.Button)}");
 			}
 			lastMousePos.X = e.X;
 			lastMousePos.Y = e.Y;
@@ -654,6 +664,7 @@ namespace imcrop
 		{
 			panning = false;
 			cropping = false;
+			//if (selectionHistory.Top != cropArea) { selectionHistory.Push(cropArea); }
 			cropSide = RectSide.Unknown;
 			disp.Cursor = Cursors.Default;
 			if (rectangleSelect)
@@ -690,9 +701,15 @@ namespace imcrop
 				if (cropArea.Right > img.Width) { cropArea.Width = img.Width - cropArea.X; }
 				if (cropArea.Bottom > img.Height) { cropArea.Height = img.Height - cropArea.Y; }
 
+				//selectionHistory.Push(cropArea);
+
 				rectangleSelect = false;
 				disp.Invalidate();
 			}
+			//else if (selectionHistory.Top != cropArea)
+			//{
+			//	selectionHistory.Push(cropArea);
+			//}
 			lastMousePos.X = e.X;
 			lastMousePos.Y = e.Y;
 			//Cursor = Cursors.Default;
@@ -969,10 +986,10 @@ namespace imcrop
 			//if (textBox1.Focused) { return; }
 			//if (textBox2.Focused) { return; }
 			if (e.KeyCode == Keys.J) { btnJpg_Click(sender, e); }
-			if (e.KeyCode == Keys.P) { btnPNG_Click(sender, e); }
-			if (e.KeyCode == Keys.Delete) { btnDelete_Click(sender, e); }
-			if (e.KeyCode == Keys.D) { btnDuplicate_Click(sender, e); }
-			if (e.KeyCode == Keys.O)
+			else if (e.KeyCode == Keys.P) { btnPNG_Click(sender, e); }
+			else if (e.KeyCode == Keys.Delete) { btnDelete_Click(sender, e); }
+			else if (e.KeyCode == Keys.D) { btnDuplicate_Click(sender, e); }
+			else if (e.KeyCode == Keys.O)
 			{
 				// Original
 				if (imgFilename.ToLower().EndsWith(".png"))
@@ -984,9 +1001,23 @@ namespace imcrop
 					btnJpg_Click(sender, e);
 				}
 			}
-			if (e.KeyCode == Keys.M)
+			else if (e.KeyCode == Keys.M)
 			{
 				btnMove_Click(sender, e);
+			}
+			else if (e.KeyCode == Keys.B)
+			{
+				if (selectionHistory.Count >= 1)
+				{
+					//selectionHistory.Pop();
+					cropArea = selectionHistory.Pop();
+					disp.Invalidate();
+				}
+			}
+			else
+			{
+				//MessageBox.Show($"KeyDown {((int)e.KeyCode)}");
+
 			}
 		}
 
